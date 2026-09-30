@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
@@ -11,7 +12,10 @@ content="width=device-width, initial-scale=1.0">
 <title>Eventos por ciudad — GlobalEven</title>
 
 <meta name="description"
-content="Encuentra eventos en ciudades de todo el mundo. Conciertos, festivales, deportes, tecnología y mucho más.">
+content="Encuentra eventos reales en ciudades de todo el mundo. Conciertos, festivales, deportes, tecnología, cultura y mucho más.">
+
+<meta name="robots"
+content="index, follow">
 
 <link rel="canonical"
 href="https://globaleven.github.io/ciudades.html">
@@ -21,34 +25,55 @@ href="assets/css/style.css">
 
 </head>
 
-
 <body>
 
 <header class="header">
 
 <div class="container header-content">
 
-<a href="index.html"
-class="logo">
+<a
+href="index.html"
+class="logo"
+aria-label="GlobalEven - Inicio">
+
 Global<span>Even</span>
+
 </a>
 
-<nav class="nav">
+<nav
+class="nav"
+aria-label="Navegación principal">
 
-<a href="eventos.html">Eventos</a>
+<a href="eventos.html">
+Eventos
+</a>
 
-<a href="categorias.html">Categorías</a>
+<a href="categorias.html">
+Categorías
+</a>
 
-<a href="paises.html">Países</a>
+<a href="paises.html">
+Países
+</a>
 
-<a href="ciudades.html">Ciudades</a>
+<a href="ciudades.html">
+Ciudades
+</a>
 
 </nav>
+
+<a
+href="buscar.html"
+class="search-button"
+aria-label="Buscar eventos">
+
+🔎 Buscar
+
+</a>
 
 </div>
 
 </header>
-
 
 <main>
 
@@ -56,78 +81,112 @@ Global<span>Even</span>
 
 <div class="container">
 
-<span>CIUDADES</span>
+<span>
+CIUDADES
+</span>
 
 <h1>
 Eventos por ciudad
 </h1>
 
 <p>
-Descubre qué eventos están ocurriendo en las principales ciudades.
+Descubre eventos reales disponibles en ciudades de todo el mundo.
 </p>
 
 </div>
 
 </section>
 
-
 <section class="section">
 
 <div class="container city-grid">
-
 
 <a href="eventos.html?ciudad=buenos-aires">
 🇦🇷 Buenos Aires
 </a>
 
-
 <a href="eventos.html?ciudad=cordoba">
 🇦🇷 Córdoba
 </a>
-
 
 <a href="eventos.html?ciudad=sao-paulo">
 🇧🇷 São Paulo
 </a>
 
-
 <a href="eventos.html?ciudad=rio-de-janeiro">
 🇧🇷 Río de Janeiro
 </a>
-
 
 <a href="eventos.html?ciudad=madrid">
 🇪🇸 Madrid
 </a>
 
-
 <a href="eventos.html?ciudad=barcelona">
 🇪🇸 Barcelona
 </a>
-
 
 <a href="eventos.html?ciudad=paris">
 🇫🇷 París
 </a>
 
-
-<a href="eventos.html?ciudad=london">
+<a href="eventos.html?ciudad=londres">
 🇬🇧 Londres
 </a>
-
 
 <a href="eventos.html?ciudad=miami">
 🇺🇸 Miami
 </a>
 
-
-<a href="eventos.html?ciudad=new-york">
+<a href="eventos.html?ciudad=nueva-york">
 🇺🇸 Nueva York
 </a>
 
-
 <a href="eventos.html?ciudad=los-angeles">
 🇺🇸 Los Ángeles
+</a>
+
+<a href="eventos.html?ciudad=toronto">
+🇨🇦 Toronto
+</a>
+
+<a href="eventos.html?ciudad=montreal">
+🇨🇦 Montreal
+</a>
+
+<a href="eventos.html?ciudad=santiago">
+🇨🇱 Santiago
+</a>
+
+<a href="eventos.html?ciudad=bogota">
+🇨🇴 Bogotá
+</a>
+
+<a href="eventos.html?ciudad=medellin">
+🇨🇴 Medellín
+</a>
+
+<a href="eventos.html?ciudad=berlin">
+🇩🇪 Berlín
+</a>
+
+<a href="eventos.html?ciudad=amsterdam">
+🇳🇱 Ámsterdam
+</a>
+
+<a href="eventos.html?ciudad=lisboa">
+🇵🇹 Lisboa
+</a>
+
+<a href="eventos.html?ciudad=sydney">
+🇦🇺 Sídney
+</a>
+
+<a href="eventos.html?ciudad=melbourne">
+🇦🇺 Melbourne
+</a>
+
+<a href="eventos.html?ciudad=tokio">
+🇯🇵 Tokio
 </a>
 
 </div>
@@ -136,18 +195,53 @@ Descubre qué eventos están ocurriendo en las principales ciudades.
 
 </main>
 
-
 <footer class="footer">
 
-<div class="container">
+<div class="container footer-content">
+
+<div>
 
 <strong>
 GlobalEven
 </strong>
 
+<p>
+Eventos de todo el mundo.
+</p>
+
+</div>
+
+<div class="footer-links">
+
+<a href="about.html">
+Sobre GlobalEven
+</a>
+
+<a href="contacto.html">
+Contacto
+</a>
+
+<a href="privacidad.html">
+Privacidad
+</a>
+
+<a href="terminos.html">
+Términos
+</a>
+
+</div>
+
+</div>
+
+<div class="container copyright">
+
+© <span id="year"></span> GlobalEven
+
 </div>
 
 </footer>
+
+<script src="assets/js/app.js"></script>
 
 </body>
 
