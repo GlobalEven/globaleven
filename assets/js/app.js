@@ -3,122 +3,107 @@
     "use strict";
 
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
+    document.addEventListener("DOMContentLoaded", function () {
 
 
-            /*
-            ======================================
-            AÑO AUTOMÁTICO DEL FOOTER
-            ======================================
-            */
+        /*
+        ======================================
+        AÑO AUTOMÁTICO DEL FOOTER
+        ======================================
+        */
 
-            document
-                .querySelectorAll("#year")
-                .forEach(element => {
+        document.querySelectorAll("#year").forEach(function (element) {
 
-                    element.textContent =
-                        new Date()
-                            .getFullYear();
+            element.textContent = new Date().getFullYear();
 
-                });
+        });
 
 
-            /*
-            ======================================
-            BÚSQUEDA DESDE LA HOME
-            ======================================
-            */
+        /*
+        ======================================
+        BÚSQUEDA DESDE LA HOME
+        ======================================
+        */
 
-            const searchForms =
-                document.querySelectorAll(
-                    ".hero-search"
-                );
+        document.querySelectorAll(".hero-search").forEach(function (form) {
 
+            form.addEventListener("submit", function (event) {
 
-            searchForms.forEach(form => {
+                const input = form.querySelector("input[name='q']");
 
-                form.addEventListener(
-                    "submit",
-                    function (event) {
+                if (!input) {
+                    return;
+                }
 
-                        const input =
-                            form.querySelector(
-                                "input[name='q']"
-                            );
+                const query = input.value.trim();
 
+                /*
+                Si está vacío, simplemente vamos
+                a la página general de eventos.
+                */
 
-                        if (
-                            !input ||
-                            !input.value.trim()
-                        ) {
+                if (!query) {
 
-                            event.preventDefault();
+                    event.preventDefault();
 
-                            window.location.href =
-                                "eventos.html";
+                    window.location.href = "eventos.html";
 
-                        }
-
-                    }
-                );
+                }
 
             });
 
-
-            /*
-            ======================================
-            CATEGORÍAS
-            ======================================
-            */
-
-            document
-                .querySelectorAll(
-                    ".category-card"
-                )
-                .forEach(card => {
-
-                    card.addEventListener(
-                        "click",
-                        function () {
-
-                            card.style.transform =
-                                "translateY(-2px)";
-
-                        }
-                    );
-
-                });
+        });
 
 
-            /*
-            ======================================
-            ENLACES INTERNOS
-            ======================================
-            */
+        /*
+        ======================================
+        ANIMACIÓN DE TARJETAS DE CATEGORÍAS
+        ======================================
+        */
 
-            document
-                .querySelectorAll(
-                    "a[href]"
-                )
-                .forEach(link => {
+        document.querySelectorAll(".category-card").forEach(function (card) {
 
-                    link.addEventListener(
-                        "click",
-                        function () {
+            card.addEventListener("click", function () {
 
-                            /*
-                            Espacio reservado para
-                            analítica futura.
-                            */
+                card.classList.add("category-card-clicked");
 
-                        }
-                    );
+                setTimeout(function () {
 
-                });
+                    card.classList.remove("category-card-clicked");
 
-        }
-    );
+                }, 180);
+
+            });
+
+        });
+
+
+        /*
+        ======================================
+        ENLACES INTERNOS
+        ======================================
+        */
+
+        /*
+        No modificamos los enlaces.
+        GitHub Pages necesita que funcionen
+        normalmente con rutas relativas.
+        */
+
+
+        /*
+        ======================================
+        ANALÍTICA FUTURA
+        ======================================
+        */
+
+        /*
+        Este espacio queda reservado para
+        Google Analytics u otro sistema futuro.
+        */
+
+
+    });
+
 
 })();
