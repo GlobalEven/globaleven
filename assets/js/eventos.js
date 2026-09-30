@@ -3,20 +3,99 @@
     "use strict";
 
 
-    const events =
-        window.GLOBALEVEN_EVENTS || [];
+    /*
+    ============================================================
+    GLOBALEVEN - SISTEMA DE EVENTOS
+    ============================================================
 
+    Flujo:
+
+    Ticketmaster
+        ↓
+    GitHub Actions
+        ↓
+    data/events.json
+        ↓
+    este archivo
+        ↓
+    GlobalEven
+
+    Si el JSON no está disponible, se utiliza como
+    respaldo window.GLOBALEVEN_EVENTS.
+    ============================================================
+    */
+
+
+    let events = [];
+
+
+    /*
+    ============================================================
+    CONFIGURACIÓN
+    ============================================================
+    */
+
+    const EVENTS_JSON =
+        "data/events.json";
+
+
+    /*
+    ============================================================
+    ESCAPAR HTML
+    ============================================================
+    */
 
     function escapeHTML(value) {
 
-        return String(value || "")
+        return String(value ?? "")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+
     }
 
+
+    /*
+    ============================================================
+    SLUGIFY
+    ============================================================
+
+    Convierte:
+
+    Estados Unidos
+    → estados-unidos
+
+    São Paulo
+    → sao-paulo
+
+    Reino Unido
+    → reino-unido
+
+    Esto permite que los enlaces de países y ciudades
+    funcionen correctamente.
+    ============================================================
+    */
+
+    function slugify(value) {
+
+        return String(value ?? "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+
+    }
+
+
+    /*
+    ============================================================
+    FECHA
+    ============================================================
+    */
 
     function formatDate(date) {
 
@@ -24,8 +103,14 @@
             return "";
         }
 
+
         const parsed =
-            new Date(date + "T12:00:00");
+            new Date(String(date) + "T12:00:00");
+
+
+        if (Number.isNaN(parsed.getTime())) {
+            return "";
+        }
 
 
         return new Intl.DateTimeFormat(
@@ -36,8 +121,260 @@
                 year: "numeric"
             }
         ).format(parsed);
+
     }
 
+
+    /*
+    ============================================================
+    HORA
+    ============================================================
+    */
+
+    function formatTime(time) {
+
+        if (!time) {
+            return "";
+        }
+
+
+        return String(time)
+            .trim();
+
+    }
+
+
+    /*
+    ============================================================
+    CARGAR EVENTS.JSON
+    ============================================================
+    */
+
+    async function loadEvents() {
+
+        /*
+        Cache busting.
+
+        Evita que el navegador mantenga
+        una versión vieja de events.json.
+        */
+
+        const cacheBuster =
+            "?v=" +
+            Math.floor(Date.now() / 3600000);
+
+
+        try {
+
+            const response =
+                await fetch(
+                    EVENTS_JSON +
+                    cacheBuster,
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            /*
+            El formato esperado es:
+
+            {
+                "updatedAt": "...",
+                "total": 123,
+                "events": []
+            }
+            */
+
+
+            if (
+                data &&
+                Array.isArray(data.events)
+            ) {
+
+                events =
+                    data.events
+                        .filter(Boolean)
+                        .map(normalizeEvent);
+
+                return events;
+
+            }
+
+
+            /*
+            Compatibilidad por si algún día
+            el JSON contiene directamente un array.
+            */
+
+            if (Array.isArray(data)) {
+
+                events =
+                    data
+                        .filter(Boolean)
+                        .map(normalizeEvent);
+
+                return events;
+
+            }
+
+
+            throw new Error(
+                "Formato de events.json no válido."
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "GlobalEven: no se pudo cargar data/events.json",
+                error
+            );
+
+
+            /*
+            RESPALDO
+
+            Si por alguna razón el JSON no está disponible,
+            utilizamos los datos incluidos en data.js.
+            */
+
+            if (
+                Array.isArray(
+                    window.GLOBALEVEN_EVENTS
+                )
+            ) {
+
+                events =
+                    window.GLOBALEVEN_EVENTS
+                        .filter(Boolean)
+                        .map(normalizeEvent);
+
+                return events;
+
+            }
+
+
+            events = [];
+
+            return events;
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    NORMALIZAR EVENTO
+    ============================================================
+
+    Ticketmaster puede devolver campos vacíos.
+
+    Esta función garantiza que el resto del sitio
+    siempre trabaje con strings seguros.
+    ============================================================
+    */
+
+    function normalizeEvent(event) {
+
+        const item =
+            event || {};
+
+
+        return {
+
+            id:
+                String(
+                    item.id ?? ""
+                ),
+
+            title:
+                String(
+                    item.title ?? ""
+                ),
+
+            date:
+                String(
+                    item.date ?? ""
+                ),
+
+            time:
+                String(
+                    item.time ?? ""
+                ),
+
+            city:
+                String(
+                    item.city ?? ""
+                ),
+
+            country:
+                String(
+                    item.country ?? ""
+                ),
+
+            countryCode:
+                String(
+                    item.countryCode ?? ""
+                ),
+
+            category:
+                String(
+                    item.category ?? "otros"
+                ),
+
+            categoryName:
+                String(
+                    item.categoryName ??
+                    item.category ??
+                    "Evento"
+                ),
+
+            venue:
+                String(
+                    item.venue ?? ""
+                ),
+
+            image:
+                String(
+                    item.image ?? ""
+                ),
+
+            description:
+                String(
+                    item.description ?? ""
+                ),
+
+            url:
+                String(
+                    item.url ?? ""
+                )
+
+        };
+
+    }
+
+
+    /*
+    ============================================================
+    CREAR TARJETA DE EVENTO
+    ============================================================
+    */
 
     function createEventCard(event) {
 
@@ -49,99 +386,159 @@
                     src="${escapeHTML(event.image)}"
                     alt="${escapeHTML(event.title)}"
                     loading="lazy"
+                    onerror="this.style.display='none'; this.parentElement.classList.add('image-error');"
                 >
                 `
                 :
                 `
-                <span>📅</span>
+                <div class="event-image-placeholder">
+                    <span>📅</span>
+                </div>
                 `;
 
 
         return `
 
-        <article class="event-card">
+            <article class="event-card">
 
-            <div class="event-image">
+                <div class="event-image">
 
-                ${image}
+                    ${image}
 
-            </div>
-
-
-            <div class="event-body">
-
-                <span class="event-tag">
-
-                    ${escapeHTML(
-                        event.categoryName ||
-                        event.category ||
-                        "Evento"
-                    )}
-
-                </span>
+                </div>
 
 
-                <h3>
+                <div class="event-body">
 
-                    ${escapeHTML(event.title)}
+                    <span class="event-tag">
 
-                </h3>
+                        ${escapeHTML(
+                            event.categoryName ||
+                            event.category ||
+                            "Evento"
+                        )}
 
-
-                <p class="event-meta">
-
-                    📅
-                    ${formatDate(event.date)}
-
-                </p>
+                    </span>
 
 
-                <p class="event-meta">
+                    <h3>
 
-                    📍
-                    ${escapeHTML(event.city)}
+                        ${escapeHTML(
+                            event.title ||
+                            "Evento"
+                        )}
 
-                    ${event.country
-                        ? " · " +
-                          escapeHTML(event.country)
-                        : ""
+                    </h3>
+
+
+                    ${
+                        event.date
+                        ?
+                        `
+                        <p class="event-meta">
+
+                            📅
+                            ${escapeHTML(
+                                formatDate(event.date)
+                            )}
+
+                        </p>
+                        `
+                        :
+                        ""
                     }
 
-                </p>
+
+                    ${
+                        event.time
+                        ?
+                        `
+                        <p class="event-meta">
+
+                            🕐
+                            ${escapeHTML(
+                                formatTime(event.time)
+                            )}
+
+                        </p>
+                        `
+                        :
+                        ""
+                    }
 
 
-                ${
-                    event.venue
-                    ?
-                    `
-                    <p class="event-meta">
+                    ${
+                        event.city ||
+                        event.country
+                        ?
+                        `
+                        <p class="event-meta">
 
-                        🏟️
-                        ${escapeHTML(event.venue)}
+                            📍
 
-                    </p>
-                    `
-                    :
-                    ""
-                }
+                            ${escapeHTML(
+                                event.city
+                            )}
+
+                            ${
+                                event.city &&
+                                event.country
+                                ? " · "
+                                : ""
+                            }
+
+                            ${escapeHTML(
+                                event.country
+                            )}
+
+                        </p>
+                        `
+                        :
+                        ""
+                    }
 
 
-                <a
-                    href="evento.html?id=${encodeURIComponent(event.id)}"
-                    class="event-link"
-                >
+                    ${
+                        event.venue
+                        ?
+                        `
+                        <p class="event-meta">
 
-                    Ver evento →
+                            🏟️
+                            ${escapeHTML(
+                                event.venue
+                            )}
 
-                </a>
+                        </p>
+                        `
+                        :
+                        ""
+                    }
 
-            </div>
 
-        </article>
+                    <a
+                        href="evento.html?id=${encodeURIComponent(event.id)}"
+                        class="event-link"
+                    >
+
+                        Ver evento →
+
+                    </a>
+
+                </div>
+
+            </article>
 
         `;
+
     }
 
+
+    /*
+    ============================================================
+    RENDERIZAR EVENTOS
+    ============================================================
+    */
 
     function renderEvents(
         container,
@@ -153,10 +550,24 @@
         }
 
 
-        container.innerHTML =
-            list
-                .map(createEventCard)
-                .join("");
+        if (!Array.isArray(list)) {
+            list = [];
+        }
+
+
+        if (!list.length) {
+
+            container.innerHTML = "";
+
+
+        } else {
+
+            container.innerHTML =
+                list
+                    .map(createEventCard)
+                    .join("");
+
+        }
 
 
         const empty =
@@ -171,17 +582,93 @@
                 list.length
                     ? "none"
                     : "block";
+
         }
+
     }
 
+
+    /*
+    ============================================================
+    ESTADO DE CARGA
+    ============================================================
+    */
+
+    function showLoading(container) {
+
+        if (!container) {
+            return;
+        }
+
+
+        container.innerHTML = `
+
+            <div class="loading-state">
+
+                <p>
+                    Cargando eventos...
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /*
+    ============================================================
+    ESTADO DE ERROR / VACÍO
+    ============================================================
+    */
+
+    function showEmpty(container) {
+
+        if (!container) {
+            return;
+        }
+
+
+        container.innerHTML = `
+
+            <div class="empty-state">
+
+                <h2>
+                    No hay eventos disponibles
+                </h2>
+
+                <p>
+                    En este momento no encontramos
+                    eventos para mostrar.
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /*
+    ============================================================
+    URL PARAMETERS
+    ============================================================
+    */
 
     function getParams() {
 
         return new URLSearchParams(
             window.location.search
         );
+
     }
 
+
+    /*
+    ============================================================
+    FILTRAR EVENTOS
+    ============================================================
+    */
 
     function filterEvents() {
 
@@ -189,13 +676,29 @@
             getParams();
 
 
+        const searchInput =
+            document.getElementById(
+                "event-search"
+            );
+
+
+        const countrySelect =
+            document.getElementById(
+                "country-filter"
+            );
+
+
+        const categorySelect =
+            document.getElementById(
+                "category-filter"
+            );
+
+
         const search =
             (
-                document
-                    .getElementById("event-search")
-                    ?.value ||
-                params.get("q") ||
-                ""
+                searchInput
+                    ? searchInput.value
+                    : params.get("q") || ""
             )
             .toLowerCase()
             .trim();
@@ -203,11 +706,9 @@
 
         const country =
             (
-                document
-                    .getElementById("country-filter")
-                    ?.value ||
-                params.get("pais") ||
-                ""
+                countrySelect
+                    ? countrySelect.value
+                    : params.get("pais") || ""
             )
             .toLowerCase()
             .trim();
@@ -215,11 +716,9 @@
 
         const category =
             (
-                document
-                    .getElementById("category-filter")
-                    ?.value ||
-                params.get("categoria") ||
-                ""
+                categorySelect
+                    ? categorySelect.value
+                    : params.get("categoria") || ""
             )
             .toLowerCase()
             .trim();
@@ -234,7 +733,14 @@
             .trim();
 
 
-        return events.filter(event => {
+        return events.filter(function (event) {
+
+
+            /*
+            ------------------------------------------
+            BÚSQUEDA GENERAL
+            ------------------------------------------
+            */
 
             const searchable = [
 
@@ -253,8 +759,8 @@
                 event.description
 
             ]
-            .join(" ")
-            .toLowerCase();
+                .join(" ")
+                .toLowerCase();
 
 
             const matchesSearch =
@@ -262,25 +768,42 @@
                 searchable.includes(search);
 
 
+            /*
+            ------------------------------------------
+            PAÍS
+            ------------------------------------------
+            */
+
             const matchesCountry =
                 !country ||
-                event.country
-                    .toLowerCase()
-                    .includes(country);
+                slugify(event.country) ===
+                slugify(country);
 
+
+            /*
+            ------------------------------------------
+            CATEGORÍA
+            ------------------------------------------
+            */
 
             const matchesCategory =
                 !category ||
-                event.category
-                    .toLowerCase()
-                    === category;
+                slugify(event.category) ===
+                slugify(category) ||
+                slugify(event.categoryName) ===
+                slugify(category);
 
+
+            /*
+            ------------------------------------------
+            CIUDAD
+            ------------------------------------------
+            */
 
             const matchesCity =
                 !city ||
-                event.city
-                    .toLowerCase()
-                    .includes(city);
+                slugify(event.city) ===
+                slugify(city);
 
 
             return (
@@ -291,8 +814,15 @@
             );
 
         });
+
     }
 
+
+    /*
+    ============================================================
+    LLENAR SELECT DE PAÍSES
+    ============================================================
+    */
 
     function populateCountries() {
 
@@ -307,6 +837,19 @@
         }
 
 
+        /*
+        Evita duplicar opciones.
+        */
+
+        select.innerHTML = `
+
+            <option value="">
+                Todos los países
+            </option>
+
+        `;
+
+
         const countries =
             [
                 ...new Set(
@@ -318,13 +861,17 @@
                         .filter(Boolean)
                 )
             ]
-            .sort(
-                (a, b) =>
-                    a.localeCompare(b)
-            );
+            .sort(function (a, b) {
+
+                return a.localeCompare(
+                    b,
+                    "es"
+                );
+
+            });
 
 
-        countries.forEach(country => {
+        countries.forEach(function (country) {
 
             const option =
                 document.createElement(
@@ -333,7 +880,7 @@
 
 
             option.value =
-                country.toLowerCase();
+                slugify(country);
 
 
             option.textContent =
@@ -353,14 +900,40 @@
 
         if (params.has("pais")) {
 
-            select.value =
-                params
-                    .get("pais")
-                    .toLowerCase();
+            const requested =
+                slugify(
+                    params.get("pais")
+                );
+
+
+            const exists =
+                Array.from(
+                    select.options
+                ).some(function (option) {
+
+                    return option.value ===
+                        requested;
+
+                });
+
+
+            if (exists) {
+
+                select.value =
+                    requested;
+
+            }
 
         }
+
     }
 
+
+    /*
+    ============================================================
+    PÁGINA DE EVENTO INDIVIDUAL
+    ============================================================
+    */
 
     function setupEventPage() {
 
@@ -383,40 +956,33 @@
             params.get("id");
 
 
-        const event =
-            events.find(
-                item =>
-                    item.id === id
+        if (!id) {
+
+            showEventNotFound(
+                container
             );
+
+            return;
+
+        }
+
+
+        const event =
+            events.find(function (item) {
+
+                return item.id === id;
+
+            });
 
 
         if (!event) {
 
-            container.innerHTML = `
-
-                <div class="empty-state">
-
-                    <h1>
-                        Evento no encontrado
-                    </h1>
-
-                    <p>
-                        El evento solicitado
-                        no está disponible.
-                    </p>
-
-                    <a
-                        href="eventos.html"
-                        class="primary-button"
-                    >
-                        Ver eventos
-                    </a>
-
-                </div>
-
-            `;
+            showEventNotFound(
+                container
+            );
 
             return;
+
         }
 
 
@@ -436,11 +1002,17 @@
                     alt="${escapeHTML(
                         event.title
                     )}"
+                    loading="eager"
+                    onerror="this.style.display='none';"
                 >
                 `
                 :
                 `
-                <span>📅</span>
+                <div class="event-image-placeholder">
+
+                    <span>📅</span>
+
+                </div>
                 `;
 
 
@@ -479,51 +1051,116 @@
 
                     <div class="detail-info">
 
-                        <p>
-                            📅
-                            ${formatDate(
-                                event.date
-                            )}
-                        </p>
+
+                        ${
+                            event.date
+                            ?
+                            `
+                            <p>
+
+                                📅
+
+                                ${escapeHTML(
+                                    formatDate(
+                                        event.date
+                                    )
+                                )}
+
+                            </p>
+                            `
+                            :
+                            ""
+                        }
 
 
-                        <p>
-                            🕐
-                            ${escapeHTML(
-                                event.time
-                            )}
-                        </p>
+                        ${
+                            event.time
+                            ?
+                            `
+                            <p>
+
+                                🕐
+
+                                ${escapeHTML(
+                                    formatTime(
+                                        event.time
+                                    )
+                                )}
+
+                            </p>
+                            `
+                            :
+                            ""
+                        }
 
 
-                        <p>
-                            📍
-                            ${escapeHTML(
-                                event.city
-                            )}
-                            ·
-                            ${escapeHTML(
-                                event.country
-                            )}
-                        </p>
+                        ${
+                            event.city ||
+                            event.country
+                            ?
+                            `
+                            <p>
+
+                                📍
+
+                                ${escapeHTML(
+                                    event.city
+                                )}
+
+                                ${
+                                    event.city &&
+                                    event.country
+                                    ? " · "
+                                    : ""
+                                }
+
+                                ${escapeHTML(
+                                    event.country
+                                )}
+
+                            </p>
+                            `
+                            :
+                            ""
+                        }
 
 
-                        <p>
-                            🏟️
-                            ${escapeHTML(
-                                event.venue
-                            )}
-                        </p>
+                        ${
+                            event.venue
+                            ?
+                            `
+                            <p>
+
+                                🏟️
+
+                                ${escapeHTML(
+                                    event.venue
+                                )}
+
+                            </p>
+                            `
+                            :
+                            ""
+                        }
 
                     </div>
 
 
-                    <p>
+                    ${
+                        event.description
+                        ?
+                        `
+                        <p>
 
-                        ${escapeHTML(
-                            event.description
-                        )}
+                            ${escapeHTML(
+                                event.description
+                            )}
 
-                    </p>
+                        </p>
+                        `
+                        :
+                        ""
+                    }
 
 
                     ${
@@ -539,7 +1176,9 @@
                             rel="noopener noreferrer"
                             class="primary-button"
                         >
+
                             Ver información oficial →
+
                         </a>
                         `
                         :
@@ -554,6 +1193,51 @@
 
     }
 
+
+    /*
+    ============================================================
+    EVENTO NO ENCONTRADO
+    ============================================================
+    */
+
+    function showEventNotFound(container) {
+
+        container.innerHTML = `
+
+            <div class="empty-state">
+
+                <h1>
+                    Evento no encontrado
+                </h1>
+
+
+                <p>
+                    El evento solicitado
+                    no está disponible.
+                </p>
+
+
+                <a
+                    href="eventos.html"
+                    class="primary-button"
+                >
+
+                    Ver eventos
+
+                </a>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /*
+    ============================================================
+    PÁGINA DE EVENTOS
+    ============================================================
+    */
 
     function setupEventsPage() {
 
@@ -593,7 +1277,16 @@
             getParams();
 
 
-        if (search && params.has("q")) {
+        /*
+        ------------------------------------------
+        RESTAURAR BÚSQUEDA
+        ------------------------------------------
+        */
+
+        if (
+            search &&
+            params.has("q")
+        ) {
 
             search.value =
                 params.get("q");
@@ -601,14 +1294,50 @@
         }
 
 
-        if (category &&
-            params.has("categoria")) {
+        /*
+        ------------------------------------------
+        RESTAURAR CATEGORÍA
+        ------------------------------------------
+        */
 
-            category.value =
-                params.get("categoria");
+        if (
+            category &&
+            params.has("categoria")
+        ) {
+
+            const requested =
+                slugify(
+                    params.get("categoria")
+                );
+
+
+            const optionExists =
+                Array.from(
+                    category.options
+                ).some(function (option) {
+
+                    return slugify(
+                        option.value
+                    ) === requested;
+
+                });
+
+
+            if (optionExists) {
+
+                category.value =
+                    requested;
+
+            }
 
         }
 
+
+        /*
+        ------------------------------------------
+        ACTUALIZAR RESULTADOS
+        ------------------------------------------
+        */
 
         function update() {
 
@@ -616,13 +1345,43 @@
                 filterEvents();
 
 
-            filtered.sort(
-                (a, b) =>
-                    String(a.date)
-                        .localeCompare(
-                            String(b.date)
+            filtered.sort(function (a, b) {
+
+                const dateA =
+                    new Date(
+                        String(a.date) +
+                        "T" +
+                        (
+                            a.time ||
+                            "00:00"
                         )
-            );
+                    ).getTime();
+
+
+                const dateB =
+                    new Date(
+                        String(b.date) +
+                        "T" +
+                        (
+                            b.time ||
+                            "00:00"
+                        )
+                    ).getTime();
+
+
+                return (
+                    (Number.isNaN(dateA)
+                        ? Infinity
+                        : dateA
+                    )
+                    -
+                    (Number.isNaN(dateB)
+                        ? Infinity
+                        : dateB
+                    )
+                );
+
+            });
 
 
             renderEvents(
@@ -633,28 +1392,52 @@
         }
 
 
-        search?.addEventListener(
-            "input",
-            update
-        );
+        /*
+        ------------------------------------------
+        EVENTOS DE LOS FILTROS
+        ------------------------------------------
+        */
+
+        if (search) {
+
+            search.addEventListener(
+                "input",
+                update
+            );
+
+        }
 
 
-        country?.addEventListener(
-            "change",
-            update
-        );
+        if (country) {
+
+            country.addEventListener(
+                "change",
+                update
+            );
+
+        }
 
 
-        category?.addEventListener(
-            "change",
-            update
-        );
+        if (category) {
+
+            category.addEventListener(
+                "change",
+                update
+            );
+
+        }
 
 
         update();
 
     }
 
+
+    /*
+    ============================================================
+    EVENTOS EN HOME
+    ============================================================
+    */
 
     function setupHomeEvents() {
 
@@ -671,13 +1454,43 @@
 
         const upcoming =
             [...events]
-                .sort(
-                    (a, b) =>
-                        String(a.date)
-                            .localeCompare(
-                                String(b.date)
+                .sort(function (a, b) {
+
+                    const dateA =
+                        new Date(
+                            String(a.date) +
+                            "T" +
+                            (
+                                a.time ||
+                                "00:00"
                             )
-                )
+                        ).getTime();
+
+
+                    const dateB =
+                        new Date(
+                            String(b.date) +
+                            "T" +
+                            (
+                                b.time ||
+                                "00:00"
+                            )
+                        ).getTime();
+
+
+                    return (
+                        (Number.isNaN(dateA)
+                            ? Infinity
+                            : dateA
+                        )
+                        -
+                        (Number.isNaN(dateB)
+                            ? Infinity
+                            : dateB
+                        )
+                    );
+
+                })
                 .slice(0, 6);
 
 
@@ -689,31 +1502,152 @@
     }
 
 
-    window.GlobalEven = {
+    /*
+    ============================================================
+    INICIALIZACIÓN
+    ============================================================
+    */
 
-        events,
+    async function initialize() {
 
-        filterEvents,
+        /*
+        Mostrar carga mientras se obtiene
+        events.json.
+        */
 
-        renderEvents,
+        const homeContainer =
+            document.getElementById(
+                "home-events"
+            );
 
-        formatDate
 
-    };
+        const eventsContainer =
+            document.getElementById(
+                "events-list"
+            );
 
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
+        const detailContainer =
+            document.getElementById(
+                "event-detail-content"
+            );
 
-            setupHomeEvents();
 
-            setupEventsPage();
+        showLoading(
+            homeContainer
+        );
 
-            setupEventPage();
+
+        showLoading(
+            eventsContainer
+        );
+
+
+        showLoading(
+            detailContainer
+        );
+
+
+        /*
+        Cargar eventos.
+        */
+
+        await loadEvents();
+
+
+        /*
+        Si no hay datos, mostrar estado vacío.
+        */
+
+        if (!events.length) {
+
+            if (homeContainer) {
+
+                showEmpty(
+                    homeContainer
+                );
+
+            }
+
+
+            if (eventsContainer) {
+
+                showEmpty(
+                    eventsContainer
+                );
+
+            }
+
+
+            if (detailContainer) {
+
+                showEventNotFound(
+                    detailContainer
+                );
+
+            }
+
+
+            return;
 
         }
-    );
+
+
+        /*
+        Ya tenemos los eventos.
+        */
+
+        setupHomeEvents();
+
+        setupEventsPage();
+
+        setupEventPage();
+
+
+        /*
+        Exponer API pública.
+        */
+
+        window.GlobalEven = {
+
+            events,
+
+            filterEvents,
+
+            renderEvents,
+
+            formatDate,
+
+            slugify,
+
+            loadEvents
+
+        };
+
+    }
+
+
+    /*
+    ============================================================
+    ARRANCAR
+    ============================================================
+    */
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            initialize
+        );
+
+    } else {
+
+        initialize();
+
+    }
 
 
 })();
