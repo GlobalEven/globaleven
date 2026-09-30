@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Evento — GlobalEven</title>
+
+<meta name="description"
+content="Información, fecha, ubicación y detalles del evento en GlobalEven.">
+
+<meta name="robots"
+content="index, follow">
+
+<link rel="stylesheet"
+href="assets/css/style.css">
+
+</head>
+
+
+<body>
+
+<header class="header">
+
+<div class="container header-content">
+
+<a href="index.html"
+class="logo">
+Global<span>Even</span>
+</a>
+
+<nav class="nav">
+
+<a href="eventos.html">
+Eventos
+</a>
+
+<a href="categorias.html">
+Categorías
+</a>
+
+<a href="paises.html">
+Países
+</a>
+
+<a href="ciudades.html">
+Ciudades
+</a>
+
+</nav>
+
+</div>
+
+</header>
+
+
+<main>
+
+<section class="event-detail">
+
+<div class="container">
+
+<div id="event-detail-content">
+
+<p>
+Cargando evento...
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<footer class="footer">
+
+<div class="container">
+
+<strong>
+GlobalEven
+</strong>
+
+<p>
+Eventos de todo el mundo.
+</p>
+
+</div>
+
+</footer>
+
+
+<script src="assets/js/data.js"></script>
+
+<script src="assets/js/eventos.js"></script>
+
+<script>
+
+const params =
+new URLSearchParams(window.location.search);
+
+const id =
+params.get("id");
+
+const event =
+window.GLOBALEVEN_EVENTS.find(
+e => e.id === id
+);
+
+
+const container =
+document.getElementById(
+"event-detail-content"
+);
+
+
+if (!event) {
+
+container.innerHTML = `
+
+<div class="empty-state">
+
+<h1>
+Evento no encontrado
+</h1>
+
+<p>
+El evento que buscas no existe o ya no está disponible.
+</p>
+
+<a href="eventos.html"
+class="primary-button">
+Ver eventos
+</a>
+
+</div>
+
+`;
+
+} else {
+
+document.title =
+event.title +
+" — GlobalEven";
+
+
+container.innerHTML = `
+
+<div class="event-detail-grid">
+
+<div class="event-detail-image">
+
+${
+event.image
+?
+`<img src="${event.image}"
+alt="${event.title}">`
+:
+`<span>📅</span>`
+}
+
+</div>
+
+
+<div>
+
+<span class="event-tag">
+${event.category}
+</span>
+
+<h1>
+${event.title}
+</h1>
+
+
+<div class="detail-info">
+
+<p>
+📅 ${event.date}
+</p>
+
+<p>
+🕐 ${event.time || ""}
+</p>
+
+<p>
+📍 ${event.city}, ${event.country}
+</p>
+
+<p>
+🏟️ ${event.venue || ""}
+</p>
+
+</div>
+
+
+<a
+href="${event.url}"
+target="_blank"
+rel="noopener noreferrer"
+class="primary-button">
+
+Ver información oficial →
+
+</a>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+</script>
+
+</body>
+
+</html>
