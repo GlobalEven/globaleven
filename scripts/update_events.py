@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -11,7 +11,7 @@ import requests
 # CONFIGURACIÓN
 # ============================================================
 
-API_KEY = os.environ.get("s0GBptijH8EIdA3J7rivkfArBVIJQRHT")
+API_KEY = os.environ.get("TICKETMASTER_API_KEY")
 
 if not API_KEY:
     raise RuntimeError(
@@ -28,7 +28,10 @@ DATA_DIR = ROOT / "data"
 DATA_FILE = DATA_DIR / "events.json"
 
 
-# Países que vamos a consultar
+# ============================================================
+# PAÍSES
+# ============================================================
+
 COUNTRIES = {
     "AR": "Argentina",
     "BR": "Brasil",
@@ -52,10 +55,34 @@ COUNTRIES = {
 
 
 # ============================================================
+# PERÍODOS DE EVENTOS
+# ============================================================
+
+# Guardamos:
+#
+# - eventos pasados recientes
+# - eventos actuales
+# - eventos futuros
+#
+# La API de Ticketmaster permite utilizar startDateTime
+# y endDateTime para buscar por rango de fechas.
+#
+# Se conservarán 30 días hacia atrás y 365 días hacia adelante.
+#
+# Esto permite que GlobalEven tenga historial reciente y
+# una buena cantidad de eventos próximos.
+# ============================================================
+
+PAST_DAYS = 30
+FUTURE_DAYS = 365
+
+
+# ============================================================
 # UTILIDADES
 # ============================================================
 
 def slugify(text):
+
     text = str(text or "").lower().strip()
 
     replacements = {
@@ -81,12 +108,12 @@ def slugify(text):
 
 
 def get_image(event):
+
     images = event.get("images", [])
 
     if not images:
         return ""
 
-    # Preferimos imágenes grandes
     images = sorted(
         images,
         key=lambda image: (
@@ -98,6 +125,16 @@ def get_image(event):
     return images[0].get("url", "")
 
 
+def get_now():
+
+    return datetime.now(timezone.utc)
+
+
+def iso_utc(value):
+
+    return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 # ============================================================
 # CATEGORÍAS
 # ============================================================
@@ -107,6 +144,7 @@ def get_classification(event):
     classifications = event.get("classifications", [])
 
     if not classifications:
+
         return {
             "category": "otros",
             "categoryName": "Otros",
@@ -134,6 +172,7 @@ def get_classification(event):
     # --------------------------------------------------------
 
     if segment_name == "Music":
+
         return {
             "category": "conciertos",
             "categoryName": "Conciertos",
@@ -144,16 +183,18 @@ def get_classification(event):
     # --------------------------------------------------------
 
     if segment_name == "Sports":
+
         return {
             "category": "deportes",
             "categoryName": "Deportes",
         }
 
     # --------------------------------------------------------
-    # Teatro / Arte / Cultura
+    # Arte / Teatro / Cultura
     # --------------------------------------------------------
 
     if segment_name == "Arts & Theatre":
+
         return {
             "category": "cultura",
             "categoryName": "Cultura",
@@ -164,6 +205,7 @@ def get_classification(event):
     # --------------------------------------------------------
 
     if segment_name == "Film":
+
         return {
             "category": "cultura",
             "categoryName": "Cultura",
@@ -175,7 +217,6 @@ def get_classification(event):
 
     technology_words = [
         "technology",
-        "technology summit",
         "tech",
         "software",
         "developer",
@@ -184,7 +225,8 @@ def get_classification(event):
         "computer",
         "computing",
         "artificial intelligence",
-        "ai ",
+        "artificial-intelligence",
+        " ai ",
         "robot",
         "robotics",
         "innovation",
@@ -192,7 +234,8 @@ def get_classification(event):
         "startup",
     ]
 
-    if any(word in text for word in technology_words):
+    if any(word in f" {text} " for word in technology_words):
+
         return {
             "category": "tecnologia",
             "categoryName": "Tecnología",
@@ -205,7 +248,6 @@ def get_classification(event):
     gaming_words = [
         "gaming",
         "gamer",
-        "gaming expo",
         "esports",
         "e-sports",
         "video game",
@@ -216,6 +258,7 @@ def get_classification(event):
     ]
 
     if any(word in text for word in gaming_words):
+
         return {
             "category": "gaming",
             "categoryName": "Gaming",
@@ -239,6 +282,7 @@ def get_classification(event):
     ]
 
     if any(word in text for word in food_words):
+
         return {
             "category": "gastronomia",
             "categoryName": "Gastronomía",
@@ -257,6 +301,7 @@ def get_classification(event):
     ]
 
     if any(word in text for word in family_words):
+
         return {
             "category": "familia",
             "categoryName": "Familia",
@@ -273,7 +318,7 @@ def get_classification(event):
 
 
 # ============================================================
-# FECHA
+# FECHA DEL EVENTO
 # ============================================================
 
 def get_event_date(event):
@@ -294,9 +339,11 @@ def get_event_date(event):
 def get_location(event):
 
     embedded = event.get("_embedded", {})
+
     venues = embedded.get("venues", [])
 
     if not venues:
+
         return {
             "venue": "",
             "city": "",
@@ -318,6 +365,122 @@ def get_location(event):
 
 
 # ============================================================
+# ESTADO DEL EVENTO
+# ============================================================
+
+def get_event_status(event):
+
+    dates = event.get("dates", {})
+
+    start = dates.get("start", {})
+    end = dates.get("end", {})
+
+    start_datetime = start.get("dateTime")
+    end_datetime = end.get("dateTime")
+
+    now = get_now()
+
+    # --------------------------------------------------------
+    # Si tenemos fecha/hora exacta de finalización
+    # --------------------------------------------------------
+
+    if end_datetime:
+
+        try:
+
+            event_end = datetime.fromisoformat(
+                end_datetime.replace("Z", "+00:00")
+            )
+
+            if event_end < now:
+
+                return "pasado"
+
+        except ValueError:
+            pass
+
+    # --------------------------------------------------------
+    # Fecha/hora de comienzo
+    # --------------------------------------------------------
+
+    if start_datetime:
+
+        try:
+
+            event_start = datetime.fromisoformat(
+                start_datetime.replace("Z", "+00:00")
+            )
+
+            if event_start > now:
+
+                return "proximo"
+
+            if end_datetime:
+
+                try:
+
+                    event_end = datetime.fromisoformat(
+                        end_datetime.replace("Z", "+00:00")
+                    )
+
+                    if event_start <= now <= event_end:
+
+                        return "ahora"
+
+                except ValueError:
+
+                    pass
+
+            # Si comenzó pero no tenemos hora final
+            # se considera actual si ocurrió hoy.
+
+            local_date = start.get("localDate", "")
+
+            if local_date == now.strftime("%Y-%m-%d"):
+
+                return "ahora"
+
+            return "pasado"
+
+        except ValueError:
+
+            pass
+
+    # --------------------------------------------------------
+    # Sin dateTime exacto
+    # --------------------------------------------------------
+
+    local_date = start.get("localDate", "")
+
+    if local_date:
+
+        try:
+
+            event_date = datetime.strptime(
+                local_date,
+                "%Y-%m-%d"
+            ).date()
+
+            today = now.date()
+
+            if event_date > today:
+
+                return "proximo"
+
+            if event_date == today:
+
+                return "ahora"
+
+            return "pasado"
+
+        except ValueError:
+
+            pass
+
+    return "proximo"
+
+
+# ============================================================
 # NORMALIZAR EVENTO
 # ============================================================
 
@@ -326,11 +489,13 @@ def normalize_event(event):
     event_id = event.get("id")
 
     if not event_id:
+
         return None
 
     local_date, local_time = get_event_date(event)
 
     if not local_date:
+
         return None
 
     location = get_location(event)
@@ -347,48 +512,103 @@ def normalize_event(event):
         or ""
     )
 
+    dates = event.get("dates", {})
+
+    start = dates.get("start", {})
+    end = dates.get("end", {})
+
+    event_status = get_event_status(event)
+
     return {
+
         "id": event_id,
+
         "slug": slug,
+
         "title": title,
+
         "date": local_date,
+
         "time": local_time,
+
+        "startDateTime": start.get(
+            "dateTime",
+            ""
+        ),
+
+        "endDateTime": end.get(
+            "dateTime",
+            ""
+        ),
+
+        "status": event_status,
+
         "city": location["city"],
+
         "country": location["country"],
+
         "countryCode": location["countryCode"],
+
         "category": classification["category"],
+
         "categoryName": classification["categoryName"],
+
         "venue": location["venue"],
+
         "image": get_image(event),
+
         "description": description,
+
         "url": event.get("url", ""),
+
         "source": "ticketmaster",
     }
 
 
 # ============================================================
-# CONSULTAR UN PAÍS
+# CONSULTAR TICKETMASTER
 # ============================================================
 
-def fetch_country(country_code):
+def fetch_country(
+    country_code,
+    start_datetime,
+    end_datetime
+):
 
     print()
-    print("=" * 60)
-    print(f"Consultando eventos de {country_code}...")
-    print("=" * 60)
+    print("=" * 70)
+    print(
+        f"Consultando {country_code} | "
+        f"{start_datetime} → {end_datetime}"
+    )
+    print("=" * 70)
 
     events = []
 
     page = 0
+
     max_pages = 5
 
     while page < max_pages:
 
         params = {
+
             "apikey": API_KEY,
+
             "countryCode": country_code,
+
+            "startDateTime": start_datetime,
+
+            "endDateTime": end_datetime,
+
+            "includeTBA": "no",
+
+            "includeTBD": "no",
+
             "size": 200,
+
             "page": page,
+
             "sort": "date,asc",
         }
 
@@ -397,25 +617,30 @@ def fetch_country(country_code):
             response = requests.get(
                 API_URL,
                 params=params,
-                timeout=30,
+                timeout=45,
             )
 
-            # Mostrar errores de Ticketmaster claramente
             if response.status_code != 200:
 
                 print(
-                    f"ERROR HTTP {response.status_code} "
+                    f"ERROR HTTP "
+                    f"{response.status_code} "
                     f"para {country_code}"
                 )
 
                 try:
+
                     print(response.json())
+
                 except Exception:
-                    print(response.text[:1000])
+
+                    print(
+                        response.text[:1000]
+                    )
 
                 raise RuntimeError(
-                    f"Ticketmaster devolvió HTTP "
-                    f"{response.status_code}"
+                    f"Ticketmaster devolvió "
+                    f"HTTP {response.status_code}"
                 )
 
             data = response.json()
@@ -423,19 +648,32 @@ def fetch_country(country_code):
         except requests.RequestException as error:
 
             raise RuntimeError(
-                f"Error de conexión con Ticketmaster: {error}"
+                "Error de conexión con "
+                f"Ticketmaster: {error}"
             )
 
-        embedded = data.get("_embedded", {})
+        embedded = data.get(
+            "_embedded",
+            {}
+        )
 
-        page_events = embedded.get("events", [])
+        page_events = embedded.get(
+            "events",
+            []
+        )
 
         if not page_events:
+
             break
 
-        events.extend(page_events)
+        events.extend(
+            page_events
+        )
 
-        page_info = data.get("page", {})
+        page_info = data.get(
+            "page",
+            {}
+        )
 
         total_pages = page_info.get(
             "totalPages",
@@ -445,16 +683,19 @@ def fetch_country(country_code):
         print(
             f"Página {page + 1}/"
             f"{total_pages or '?'} "
-            f"- {len(page_events)} eventos"
+            f"- "
+            f"{len(page_events)} eventos"
         )
 
         page += 1
 
         if page >= total_pages:
+
             break
 
     print(
-        f"Eventos encontrados en {country_code}: "
+        f"Eventos encontrados en "
+        f"{country_code}: "
         f"{len(events)}"
     )
 
@@ -462,7 +703,7 @@ def fetch_country(country_code):
 
 
 # ============================================================
-# GUARDAR DATOS
+# GUARDAR
 # ============================================================
 
 def save_events(events):
@@ -477,8 +718,11 @@ def save_events(events):
     ).isoformat()
 
     output = {
+
         "updatedAt": now,
+
         "total": len(events),
+
         "events": events,
     }
 
@@ -496,12 +740,16 @@ def save_events(events):
         )
 
     print()
-    print("=" * 60)
+    print("=" * 70)
     print("ARCHIVO ACTUALIZADO")
-    print("=" * 60)
-    print(f"Eventos: {len(events)}")
-    print(f"Archivo: {DATA_FILE}")
-    print("=" * 60)
+    print("=" * 70)
+    print(
+        f"Eventos: {len(events)}"
+    )
+    print(
+        f"Archivo: {DATA_FILE}"
+    )
+    print("=" * 70)
 
 
 # ============================================================
@@ -511,16 +759,45 @@ def save_events(events):
 def main():
 
     print()
-    print("=" * 60)
-    print("GLOBAL EVEN - ACTUALIZADOR DE EVENTOS")
-    print("=" * 60)
+    print("=" * 70)
+    print(
+        "GLOBALEVEN - "
+        "ACTUALIZADOR REAL DE EVENTOS"
+    )
+    print("=" * 70)
+
+    now = get_now()
+
+    past_start = now - timedelta(
+        days=PAST_DAYS
+    )
+
+    future_end = now + timedelta(
+        days=FUTURE_DAYS
+    )
+
+    start_datetime = iso_utc(
+        past_start
+    )
+
+    end_datetime = iso_utc(
+        future_end
+    )
+
     print()
+    print(
+        f"Período: "
+        f"{start_datetime} "
+        f"→ "
+        f"{end_datetime}"
+    )
 
     all_events = []
 
     seen_ids = set()
 
     successful_countries = 0
+
     failed_countries = 0
 
     for country_code in COUNTRIES:
@@ -528,7 +805,9 @@ def main():
         try:
 
             country_events = fetch_country(
-                country_code
+                country_code,
+                start_datetime,
+                end_datetime
             )
 
             successful_countries += 1
@@ -540,81 +819,143 @@ def main():
                 )
 
                 if not event:
+
                     continue
 
                 event_id = event["id"]
 
                 if event_id in seen_ids:
+
                     continue
 
-                seen_ids.add(event_id)
+                seen_ids.add(
+                    event_id
+                )
 
-                all_events.append(event)
+                all_events.append(
+                    event
+                )
 
         except Exception as error:
 
             failed_countries += 1
 
             print()
+
             print(
-                f"ERROR en {country_code}: "
+                f"ERROR en "
+                f"{country_code}: "
                 f"{error}"
             )
+
             print()
 
-    # --------------------------------------------------------
-    # Seguridad:
-    # NO reemplazar events.json si Ticketmaster
-    # devolvió cero eventos.
-    # --------------------------------------------------------
+    # ========================================================
+    # SEGURIDAD
+    # ========================================================
 
     if len(all_events) == 0:
 
         raise RuntimeError(
-            "Ticketmaster no devolvió ningún evento. "
-            "Por seguridad NO se reemplazó events.json."
+            "Ticketmaster no devolvió "
+            "ningún evento dentro del "
+            "período solicitado. "
+            "No se modificará events.json."
         )
 
-    # --------------------------------------------------------
-    # Ordenar eventos
-    # --------------------------------------------------------
+    # ========================================================
+    # ORDEN
+    # ========================================================
 
     all_events.sort(
         key=lambda event: (
-            event.get("date", ""),
-            event.get("time", ""),
-            event.get("title", ""),
+            event.get(
+                "date",
+                ""
+            ),
+            event.get(
+                "time",
+                ""
+            ),
+            event.get(
+                "title",
+                ""
+            ),
         )
     )
 
-    # --------------------------------------------------------
-    # Guardar
-    # --------------------------------------------------------
+    # ========================================================
+    # GUARDAR
+    # ========================================================
 
-    save_events(all_events)
+    save_events(
+        all_events
+    )
 
-    # --------------------------------------------------------
-    # Resumen
-    # --------------------------------------------------------
+    # ========================================================
+    # ESTADÍSTICAS
+    # ========================================================
+
+    past = sum(
+        1
+        for event in all_events
+        if event.get("status") == "pasado"
+    )
+
+    now_events = sum(
+        1
+        for event in all_events
+        if event.get("status") == "ahora"
+    )
+
+    upcoming = sum(
+        1
+        for event in all_events
+        if event.get("status") == "proximo"
+    )
 
     print()
-    print("=" * 60)
-    print("RESUMEN")
-    print("=" * 60)
+    print("=" * 70)
+    print("RESUMEN FINAL")
+    print("=" * 70)
+
     print(
         f"Países correctos: "
         f"{successful_countries}"
     )
+
     print(
         f"Países con error: "
         f"{failed_countries}"
     )
+
     print(
         f"Eventos totales: "
         f"{len(all_events)}"
     )
-    print("=" * 60)
 
+    print(
+        f"Eventos pasados: "
+        f"{past}"
+    )
+
+    print(
+        f"Eventos actuales: "
+        f"{now_events}"
+    )
+
+    print(
+        f"Eventos próximos: "
+        f"{upcoming}"
+    )
+
+    print("=" * 70)
+
+
+# ============================================================
+# EJECUTAR
+# ============================================================
 
 if __name__ == "__main__":
+
     main()
