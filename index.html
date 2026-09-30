@@ -1,58 +1,125 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <title>GlobalEven — Eventos de todo el mundo</title>
 
-    <meta name="description"
-          content="Descubre eventos, conciertos, festivales, deportes, tecnología y actividades cerca de ti y en todo el mundo.">
+    <title>
+        GlobalEven — Eventos de todo el mundo
+    </title>
 
-    <meta name="robots" content="index, follow">
 
-    <link rel="canonical"
-          href="https://globaleven.github.io/">
+    <meta
+        name="description"
+        content="Descubre conciertos, festivales, deportes, tecnología, cultura, gaming y otros eventos en ciudades de todo el mundo."
+    >
 
-    <meta property="og:type" content="website">
 
-    <meta property="og:title"
-          content="GlobalEven — Eventos de todo el mundo">
+    <meta
+        name="robots"
+        content="index, follow"
+    >
 
-    <meta property="og:description"
-          content="Encuentra conciertos, festivales, deportes, tecnología y eventos en ciudades de todo el mundo.">
 
-    <meta property="og:url"
-          content="https://globaleven.github.io/">
+    <link
+        rel="canonical"
+        href="https://globaleven.github.io/"
+    >
 
-    <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- Open Graph -->
+
+    <meta
+        property="og:type"
+        content="website"
+    >
+
+    <meta
+        property="og:title"
+        content="GlobalEven — Eventos de todo el mundo"
+    >
+
+    <meta
+        property="og:description"
+        content="Encuentra conciertos, festivales, deportes, tecnología, cultura y otros eventos en ciudades de todo el mundo."
+    >
+
+    <meta
+        property="og:url"
+        content="https://globaleven.github.io/"
+    >
+
+
+    <!-- CSS -->
+
+    <link
+        rel="stylesheet"
+        href="assets/css/style.css"
+    >
+
 </head>
 
+
 <body>
+
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
 
 <header class="header">
 
     <div class="container header-content">
 
-        <a href="index.html" class="logo">
+
+        <a
+            href="index.html"
+            class="logo"
+            aria-label="GlobalEven - Inicio"
+        >
+
             Global<span>Even</span>
+
         </a>
 
-        <nav class="nav">
 
-            <a href="eventos.html">Eventos</a>
+        <nav
+            class="nav"
+            aria-label="Navegación principal"
+        >
 
-            <a href="categorias.html">Categorías</a>
+            <a href="eventos.html">
+                Eventos
+            </a>
 
-            <a href="paises.html">Países</a>
+            <a href="categorias.html">
+                Categorías
+            </a>
 
-            <a href="ciudades.html">Ciudades</a>
+            <a href="paises.html">
+                Países
+            </a>
+
+            <a href="ciudades.html">
+                Ciudades
+            </a>
 
         </nav>
 
-        <a href="buscar.html" class="search-button">
+
+        <a
+            href="buscar.html"
+            class="search-button"
+            aria-label="Buscar eventos"
+        >
+
             🔎 Buscar
+
         </a>
 
     </div>
@@ -60,37 +127,64 @@
 </header>
 
 
+<!-- =========================================================
+     CONTENIDO PRINCIPAL
+========================================================= -->
+
 <main>
+
+
+<!-- =========================================================
+     HERO
+========================================================= -->
 
 <section class="hero">
 
     <div class="container hero-content">
 
+
         <div class="hero-label">
+
             🌎 EVENTOS DE TODO EL MUNDO
+
         </div>
 
+
         <h1>
+
             Descubre lo que está pasando.
+
         </h1>
 
+
         <p>
-            Encuentra conciertos, festivales, deportes, tecnología,
-            cultura y cientos de eventos en ciudades de todo el mundo.
+
+            Encuentra conciertos, festivales, deportes,
+            tecnología, cultura y cientos de eventos
+            en ciudades de todo el mundo.
+
         </p>
 
 
-        <form class="hero-search" action="buscar.html">
+        <form
+            class="hero-search"
+            action="eventos.html"
+            method="get"
+        >
 
             <input
                 type="search"
                 name="q"
                 placeholder="¿Qué evento estás buscando?"
                 aria-label="Buscar eventos"
+                autocomplete="off"
             >
 
+
             <button type="submit">
+
                 Buscar eventos
+
             </button>
 
         </form>
@@ -100,22 +194,34 @@
 </section>
 
 
+<!-- =========================================================
+     CATEGORÍAS
+========================================================= -->
+
 <section class="section">
 
     <div class="container">
+
 
         <div class="section-title">
 
             <div>
 
-                <span>EXPLORA</span>
+                <span>
+                    EXPLORA
+                </span>
 
-                <h2>Eventos por categoría</h2>
+                <h2>
+                    Eventos por categoría
+                </h2>
 
             </div>
 
+
             <a href="categorias.html">
+
                 Ver todas →
+
             </a>
 
         </div>
@@ -123,100 +229,166 @@
 
         <div class="category-grid">
 
-            <a href="eventos.html?categoria=conciertos"
-               class="category-card">
 
-                <div>🎵</div>
+            <a
+                href="eventos.html?categoria=conciertos"
+                class="category-card"
+            >
 
-                <h3>Conciertos</h3>
+                <div aria-hidden="true">
+                    🎵
+                </div>
 
-                <p>Música y shows</p>
+                <h3>
+                    Conciertos
+                </h3>
 
-            </a>
-
-
-            <a href="eventos.html?categoria=festivales"
-               class="category-card">
-
-                <div>🎪</div>
-
-                <h3>Festivales</h3>
-
-                <p>Festivales y celebraciones</p>
+                <p>
+                    Música y shows
+                </p>
 
             </a>
 
 
-            <a href="eventos.html?categoria=deportes"
-               class="category-card">
+            <a
+                href="eventos.html?categoria=festivales"
+                class="category-card"
+            >
 
-                <div>⚽</div>
+                <div aria-hidden="true">
+                    🎪
+                </div>
 
-                <h3>Deportes</h3>
+                <h3>
+                    Festivales
+                </h3>
 
-                <p>Eventos deportivos</p>
-
-            </a>
-
-
-            <a href="eventos.html?categoria=tecnologia"
-               class="category-card">
-
-                <div>💻</div>
-
-                <h3>Tecnología</h3>
-
-                <p>Ferias y conferencias</p>
+                <p>
+                    Festivales y celebraciones
+                </p>
 
             </a>
 
 
-            <a href="eventos.html?categoria=cultura"
-               class="category-card">
+            <a
+                href="eventos.html?categoria=deportes"
+                class="category-card"
+            >
 
-                <div>🎨</div>
+                <div aria-hidden="true">
+                    ⚽
+                </div>
 
-                <h3>Arte y cultura</h3>
+                <h3>
+                    Deportes
+                </h3>
 
-                <p>Arte, museos y cultura</p>
-
-            </a>
-
-
-            <a href="eventos.html?categoria=gaming"
-               class="category-card">
-
-                <div>🎮</div>
-
-                <h3>Gaming</h3>
-
-                <p>Videojuegos y esports</p>
+                <p>
+                    Eventos deportivos
+                </p>
 
             </a>
 
 
-            <a href="eventos.html?categoria=gastronomia"
-               class="category-card">
+            <a
+                href="eventos.html?categoria=tecnologia"
+                class="category-card"
+            >
 
-                <div>🍴</div>
+                <div aria-hidden="true">
+                    💻
+                </div>
 
-                <h3>Gastronomía</h3>
+                <h3>
+                    Tecnología
+                </h3>
 
-                <p>Comida y experiencias</p>
+                <p>
+                    Ferias y conferencias
+                </p>
+
+            </a>
+
+
+            <a
+                href="eventos.html?categoria=cultura"
+                class="category-card"
+            >
+
+                <div aria-hidden="true">
+                    🎨
+                </div>
+
+                <h3>
+                    Arte y cultura
+                </h3>
+
+                <p>
+                    Arte, museos y cultura
+                </p>
 
             </a>
 
 
-            <a href="eventos.html?categoria=familia"
-               class="category-card">
+            <a
+                href="eventos.html?categoria=gaming"
+                class="category-card"
+            >
 
-                <div>👨‍👩‍👧</div>
+                <div aria-hidden="true">
+                    🎮
+                </div>
 
-                <h3>Familia</h3>
+                <h3>
+                    Gaming
+                </h3>
 
-                <p>Eventos familiares</p>
+                <p>
+                    Videojuegos y esports
+                </p>
 
             </a>
+
+
+            <a
+                href="eventos.html?categoria=gastronomia"
+                class="category-card"
+            >
+
+                <div aria-hidden="true">
+                    🍴
+                </div>
+
+                <h3>
+                    Gastronomía
+                </h3>
+
+                <p>
+                    Comida y experiencias
+                </p>
+
+            </a>
+
+
+            <a
+                href="eventos.html?categoria=familia"
+                class="category-card"
+            >
+
+                <div aria-hidden="true">
+                    👨‍👩‍👧
+                </div>
+
+                <h3>
+                    Familia
+                </h3>
+
+                <p>
+                    Eventos familiares
+                </p>
+
+            </a>
+
 
         </div>
 
@@ -224,54 +396,92 @@
 
 </section>
 
+
+<!-- =========================================================
+     PRÓXIMOS EVENTOS
+========================================================= -->
 
 <section class="section section-light">
 
     <div class="container">
 
+
         <div class="section-title">
 
             <div>
 
-                <span>AGENDA</span>
+                <span>
+                    AGENDA
+                </span>
 
-                <h2>Próximos eventos</h2>
+                <h2>
+                    Próximos eventos
+                </h2>
 
             </div>
 
+
             <a href="eventos.html">
+
                 Ver todos →
+
             </a>
 
         </div>
 
 
+        <!--
+
+        Los eventos se cargan automáticamente desde:
+
+        data/events.json
+
+        mediante:
+
+        assets/js/eventos.js
+
+        -->
+
         <div
             id="home-events"
-            class="event-grid">
-        </div>
+            class="event-grid"
+            aria-live="polite"
+        ></div>
+
 
     </div>
 
 </section>
 
 
+<!-- =========================================================
+     PAÍSES
+========================================================= -->
+
 <section class="section">
 
     <div class="container">
+
 
         <div class="section-title">
 
             <div>
 
-                <span>MUNDO</span>
+                <span>
+                    MUNDO
+                </span>
 
-                <h2>Explora por país</h2>
+                <h2>
+                    Explora por país
+                </h2>
 
             </div>
 
+
             <a href="paises.html">
+
                 Ver países →
+
             </a>
 
         </div>
@@ -279,37 +489,46 @@
 
         <div class="country-grid">
 
+
             <a href="eventos.html?pais=argentina">
                 🇦🇷 Argentina
             </a>
+
 
             <a href="eventos.html?pais=brasil">
                 🇧🇷 Brasil
             </a>
 
+
             <a href="eventos.html?pais=mexico">
                 🇲🇽 México
             </a>
+
 
             <a href="eventos.html?pais=espana">
                 🇪🇸 España
             </a>
 
+
             <a href="eventos.html?pais=estados-unidos">
                 🇺🇸 Estados Unidos
             </a>
+
 
             <a href="eventos.html?pais=francia">
                 🇫🇷 Francia
             </a>
 
+
             <a href="eventos.html?pais=italia">
                 🇮🇹 Italia
             </a>
 
+
             <a href="eventos.html?pais=reino-unido">
                 🇬🇧 Reino Unido
             </a>
+
 
         </div>
 
@@ -317,16 +536,25 @@
 
 </section>
 
+
 </main>
 
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
 
 <footer class="footer">
 
     <div class="container footer-content">
 
+
         <div>
 
-            <strong>GlobalEven</strong>
+            <strong>
+                GlobalEven
+            </strong>
+
 
             <p>
                 Eventos de todo el mundo.
@@ -337,21 +565,26 @@
 
         <div class="footer-links">
 
+
             <a href="about.html">
                 Sobre GlobalEven
             </a>
+
 
             <a href="contacto.html">
                 Contacto
             </a>
 
+
             <a href="privacidad.html">
                 Privacidad
             </a>
 
+
             <a href="terminos.html">
                 Términos
             </a>
+
 
         </div>
 
@@ -360,12 +593,27 @@
 
     <div class="container copyright">
 
-        © <span id="year"></span> GlobalEven
+        ©
+        <span id="year"></span>
+        GlobalEven
 
     </div>
 
 </footer>
 
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<!--
+    data.js queda como respaldo.
+    eventos.js primero intenta cargar:
+
+    data/events.json
+
+    generado automáticamente por GitHub Actions.
+-->
 
 <script src="assets/js/data.js"></script>
 
@@ -373,5 +621,7 @@
 
 <script src="assets/js/app.js"></script>
 
+
 </body>
+
 </html>
