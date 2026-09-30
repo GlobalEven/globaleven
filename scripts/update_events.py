@@ -11,7 +11,7 @@ import requests
 # CONFIGURACIÓN
 # ============================================================
 
-API_KEY = os.environ.get("TICKETMASTER_API_KEY")
+API_KEY = os.environ.get("s0GBptijH8EIdA3J7rivkfArBVIJQRHT")
 
 if not API_KEY:
     raise RuntimeError(
