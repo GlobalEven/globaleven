@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
@@ -11,13 +12,18 @@ content="width=device-width, initial-scale=1.0">
 <title>Buscar eventos — GlobalEven</title>
 
 <meta name="description"
-content="Busca eventos, conciertos, festivales, deportes y actividades en GlobalEven.">
+content="Busca eventos reales por nombre, ciudad, país o categoría en GlobalEven.">
+
+<meta name="robots"
+content="index, follow">
+
+<link rel="canonical"
+href="https://globaleven.github.io/buscar.html">
 
 <link rel="stylesheet"
 href="assets/css/style.css">
 
 </head>
-
 
 <body>
 
@@ -25,27 +31,49 @@ href="assets/css/style.css">
 
 <div class="container header-content">
 
-<a href="index.html"
-class="logo">
+<a
+href="index.html"
+class="logo"
+aria-label="GlobalEven - Inicio">
+
 Global<span>Even</span>
+
 </a>
 
-<nav class="nav">
+<nav
+class="nav"
+aria-label="Navegación principal">
 
-<a href="eventos.html">Eventos</a>
+<a href="eventos.html">
+Eventos
+</a>
 
-<a href="categorias.html">Categorías</a>
+<a href="categorias.html">
+Categorías
+</a>
 
-<a href="paises.html">Países</a>
+<a href="paises.html">
+Países
+</a>
 
-<a href="ciudades.html">Ciudades</a>
+<a href="ciudades.html">
+Ciudades
+</a>
 
 </nav>
+
+<a
+href="buscar.html"
+class="search-button"
+aria-label="Buscar eventos">
+
+🔎 Buscar
+
+</a>
 
 </div>
 
 </header>
-
 
 <main>
 
@@ -53,26 +81,32 @@ Global<span>Even</span>
 
 <div class="container">
 
-<span>BUSCADOR</span>
+<span>
+BUSCADOR
+</span>
 
 <h1>
 Buscar eventos
 </h1>
 
 <p>
-Busca por nombre, ciudad, país o categoría.
+Busca eventos reales por nombre, ciudad, país o categoría.
 </p>
-
 
 <form
 class="big-search"
-action="eventos.html">
+action="eventos.html"
+method="get">
 
 <input
 type="search"
 name="q"
 placeholder="Ej: conciertos Buenos Aires"
+aria-label="Buscar eventos"
+autocomplete="off"
 autofocus
+required
+
 >
 
 <button type="submit">
@@ -87,18 +121,53 @@ Buscar
 
 </main>
 
-
 <footer class="footer">
 
-<div class="container">
+<div class="container footer-content">
+
+<div>
 
 <strong>
 GlobalEven
 </strong>
 
+<p>
+Eventos de todo el mundo.
+</p>
+
+</div>
+
+<div class="footer-links">
+
+<a href="about.html">
+Sobre GlobalEven
+</a>
+
+<a href="contacto.html">
+Contacto
+</a>
+
+<a href="privacidad.html">
+Privacidad
+</a>
+
+<a href="terminos.html">
+Términos
+</a>
+
+</div>
+
+</div>
+
+<div class="container copyright">
+
+© <span id="year"></span> GlobalEven
+
 </div>
 
 </footer>
+
+<script src="assets/js/app.js"></script>
 
 </body>
 
