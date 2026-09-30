@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
@@ -11,7 +12,10 @@ content="width=device-width, initial-scale=1.0">
 <title>Eventos por país — GlobalEven</title>
 
 <meta name="description"
-content="Descubre eventos y actividades por país. Explora Argentina, Brasil, México, España, Estados Unidos y más.">
+content="Descubre eventos reales por país. Explora Argentina, Brasil, México, Chile, Colombia, España, Estados Unidos, Canadá y otros destinos.">
+
+<meta name="robots"
+content="index, follow">
 
 <link rel="canonical"
 href="https://globaleven.github.io/paises.html">
@@ -21,19 +25,24 @@ href="assets/css/style.css">
 
 </head>
 
-
 <body>
 
 <header class="header">
 
 <div class="container header-content">
 
-<a href="index.html"
-class="logo">
+<a
+href="index.html"
+class="logo"
+aria-label="GlobalEven - Inicio">
+
 Global<span>Even</span>
+
 </a>
 
-<nav class="nav">
+<nav
+class="nav"
+aria-label="Navegación principal">
 
 <a href="eventos.html">
 Eventos
@@ -53,10 +62,18 @@ Ciudades
 
 </nav>
 
+<a
+href="buscar.html"
+class="search-button"
+aria-label="Buscar eventos">
+
+🔎 Buscar
+
+</a>
+
 </div>
 
 </header>
-
 
 <main>
 
@@ -64,20 +81,21 @@ Ciudades
 
 <div class="container">
 
-<span>MUNDO</span>
+<span>
+MUNDO
+</span>
 
 <h1>
 Eventos por país
 </h1>
 
 <p>
-Explora eventos en diferentes países del mundo.
+Explora eventos reales disponibles en diferentes países del mundo.
 </p>
 
 </div>
 
 </section>
-
 
 <section class="section">
 
@@ -127,8 +145,28 @@ Explora eventos en diferentes países del mundo.
 🇨🇦 Canadá
 </a>
 
-<a href="eventos.html?pais=mexico">
-🇲🇽 México
+<a href="eventos.html?pais=alemania">
+🇩🇪 Alemania
+</a>
+
+<a href="eventos.html?pais=paises-bajos">
+🇳🇱 Países Bajos
+</a>
+
+<a href="eventos.html?pais=portugal">
+🇵🇹 Portugal
+</a>
+
+<a href="eventos.html?pais=australia">
+🇦🇺 Australia
+</a>
+
+<a href="eventos.html?pais=nueva-zelanda">
+🇳🇿 Nueva Zelanda
+</a>
+
+<a href="eventos.html?pais=japon">
+🇯🇵 Japón
 </a>
 
 </div>
@@ -137,18 +175,53 @@ Explora eventos en diferentes países del mundo.
 
 </main>
 
-
 <footer class="footer">
 
-<div class="container">
+<div class="container footer-content">
+
+<div>
 
 <strong>
 GlobalEven
 </strong>
 
+<p>
+Eventos de todo el mundo.
+</p>
+
+</div>
+
+<div class="footer-links">
+
+<a href="about.html">
+Sobre GlobalEven
+</a>
+
+<a href="contacto.html">
+Contacto
+</a>
+
+<a href="privacidad.html">
+Privacidad
+</a>
+
+<a href="terminos.html">
+Términos
+</a>
+
+</div>
+
+</div>
+
+<div class="container copyright">
+
+© <span id="year"></span> GlobalEven
+
 </div>
 
 </footer>
+
+<script src="assets/js/app.js"></script>
 
 </body>
 
