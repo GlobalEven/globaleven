@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
@@ -6,15 +7,15 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+   content="width=device-width, initial-scale=1.0">
 
 <title>Eventos — GlobalEven</title>
 
 <meta name="description"
-      content="Explora eventos, conciertos, festivales, deportes, tecnología y actividades de todo el mundo.">
+   content="Explora eventos reales de todo el mundo: conciertos, festivales, deportes, tecnología, cultura, gaming, gastronomía y actividades familiares.">
 
 <meta name="robots"
-      content="index, follow">
+   content="index, follow">
 
 <link rel="canonical"
       href="https://globaleven.github.io/eventos.html">
@@ -23,7 +24,6 @@
       href="assets/css/style.css">
 
 </head>
-
 
 <body>
 
@@ -55,15 +55,13 @@ Ciudades
 
 </nav>
 
-<a href="buscar.html"
-class="search-button">
+<a href="buscar.html" class="search-button">
 🔎 Buscar
 </a>
 
 </div>
 
 </header>
-
 
 <main>
 
@@ -78,19 +76,17 @@ Eventos
 </h1>
 
 <p>
-Encuentra eventos próximos en diferentes ciudades
-y países del mundo.
+Explora eventos reales de todo el mundo, incluyendo eventos pasados,
+eventos que están ocurriendo ahora y próximos eventos.
 </p>
 
 </div>
 
 </section>
 
-
 <section class="section">
 
 <div class="container">
-
 
 <div class="filters">
 
@@ -98,6 +94,8 @@ y países del mundo.
 type="search"
 id="event-search"
 placeholder="Buscar eventos..."
+autocomplete="off"
+
 >
 
 <select id="country-filter">
@@ -107,7 +105,6 @@ Todos los países
 </option>
 
 </select>
-
 
 <select id="category-filter">
 
@@ -147,16 +144,38 @@ Gastronomía
 Familia
 </option>
 
+<option value="otros">
+Otros
+</option>
+
+</select>
+
+<select id="status-filter">
+
+<option value="">
+Todos los estados
+</option>
+
+<option value="ahora">
+Ahora
+</option>
+
+<option value="proximo">
+Próximos
+</option>
+
+<option value="pasado">
+Pasados
+</option>
+
 </select>
 
 </div>
-
 
 <div
 id="events-list"
 class="event-grid">
 </div>
-
 
 <div
 id="no-events"
@@ -168,18 +187,20 @@ No encontramos eventos
 </h2>
 
 <p>
-Prueba con otra búsqueda o filtro.
+Prueba con otra búsqueda o cambia los filtros.
 </p>
 
-</div>
+<a href="eventos.html"
+class="primary-button">
+Ver todos los eventos </a>
 
+</div>
 
 </div>
 
 </section>
 
 </main>
-
 
 <footer class="footer">
 
@@ -212,7 +233,6 @@ Términos
 </div>
 
 </footer>
-
 
 <script src="assets/js/data.js"></script>
 
