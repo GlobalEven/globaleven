@@ -2,13 +2,12 @@
 
     "use strict";
 
-
     /*
     ============================================================
-    GLOBALEVEN - SISTEMA DE EVENTOS
+    GLOBALEVEN - SISTEMA REAL DE EVENTOS
     ============================================================
 
-    Flujo:
+    Fuente exclusiva:
 
     Ticketmaster
         ↓
@@ -20,23 +19,13 @@
         ↓
     GlobalEven
 
-    Si el JSON no está disponible, se utiliza como
-    respaldo window.GLOBALEVEN_EVENTS.
+    NO utiliza eventos de demostración.
     ============================================================
     */
-
 
     let events = [];
 
-
-    /*
-    ============================================================
-    CONFIGURACIÓN
-    ============================================================
-    */
-
-    const EVENTS_JSON =
-        "data/events.json";
+    const EVENTS_JSON = "data/events.json";
 
 
     /*
@@ -60,21 +49,6 @@
     /*
     ============================================================
     SLUGIFY
-    ============================================================
-
-    Convierte:
-
-    Estados Unidos
-    → estados-unidos
-
-    São Paulo
-    → sao-paulo
-
-    Reino Unido
-    → reino-unido
-
-    Esto permite que los enlaces de países y ciudades
-    funcionen correctamente.
     ============================================================
     */
 
@@ -103,15 +77,14 @@
             return "";
         }
 
-
         const parsed =
-            new Date(String(date) + "T12:00:00");
-
+            new Date(
+                String(date) + "T12:00:00"
+            );
 
         if (Number.isNaN(parsed.getTime())) {
             return "";
         }
-
 
         return new Intl.DateTimeFormat(
             "es",
@@ -137,9 +110,131 @@
             return "";
         }
 
-
         return String(time)
-            .trim();
+            .trim()
+            .substring(0, 5);
+
+    }
+
+
+    /*
+    ============================================================
+    FECHA/HORA DEL EVENTO
+    ============================================================
+    */
+
+    function getEventTimestamp(event) {
+
+        if (!event || !event.date) {
+            return NaN;
+        }
+
+        const date =
+            String(event.date);
+
+        const time =
+            event.time
+                ? String(event.time)
+                : "00:00:00";
+
+        const timestamp =
+            new Date(
+                date + "T" + time
+            ).getTime();
+
+        return timestamp;
+
+    }
+
+
+    /*
+    ============================================================
+    ESTADO DEL EVENTO
+    ============================================================
+    */
+
+    function getEventStatus(event) {
+
+        if (
+            event &&
+            event.status
+        ) {
+
+            return String(
+                event.status
+            ).toLowerCase();
+
+        }
+
+        const timestamp =
+            getEventTimestamp(event);
+
+        if (Number.isNaN(timestamp)) {
+            return "proximo";
+        }
+
+        const now =
+            Date.now();
+
+        if (timestamp > now) {
+            return "proximo";
+        }
+
+        return "pasado";
+
+    }
+
+
+    /*
+    ============================================================
+    NOMBRE DEL ESTADO
+    ============================================================
+    */
+
+    function getStatusLabel(status) {
+
+        switch (status) {
+
+            case "ahora":
+                return "Ahora";
+
+            case "pasado":
+                return "Pasado";
+
+            case "proximo":
+                return "Próximo";
+
+            default:
+                return "";
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    CLASE DEL ESTADO
+    ============================================================
+    */
+
+    function getStatusClass(status) {
+
+        switch (status) {
+
+            case "ahora":
+                return "event-status-now";
+
+            case "pasado":
+                return "event-status-past";
+
+            case "proximo":
+                return "event-status-upcoming";
+
+            default:
+                return "";
+
+        }
 
     }
 
@@ -152,16 +247,9 @@
 
     async function loadEvents() {
 
-        /*
-        Cache busting.
-
-        Evita que el navegador mantenga
-        una versión vieja de events.json.
-        */
-
         const cacheBuster =
             "?v=" +
-            Math.floor(Date.now() / 3600000);
+            Date.now();
 
 
         try {
@@ -190,15 +278,7 @@
                 await response.json();
 
 
-            /*
-            El formato esperado es:
-
-            {
-                "updatedAt": "...",
-                "total": 123,
-                "events": []
-            }
-            */
+            let loadedEvents = [];
 
 
             if (
@@ -206,68 +286,64 @@
                 Array.isArray(data.events)
             ) {
 
-                events =
-                    data.events
-                        .filter(Boolean)
-                        .map(normalizeEvent);
+                loadedEvents =
+                    data.events;
 
-                return events;
+            }
+
+            else if (
+                Array.isArray(data)
+            ) {
+
+                loadedEvents =
+                    data;
+
+            }
+
+            else {
+
+                throw new Error(
+                    "Formato de events.json no válido."
+                );
 
             }
 
 
-            /*
-            Compatibilidad por si algún día
-            el JSON contiene directamente un array.
-            */
+            events =
+                loadedEvents
+                    .filter(Boolean)
+                    .map(normalizeEvent)
+                    .filter(function (event) {
 
-            if (Array.isArray(data)) {
+                        return Boolean(
+                            event.id &&
+                            event.title &&
+                            event.date
+                        );
 
-                events =
-                    data
-                        .filter(Boolean)
-                        .map(normalizeEvent);
-
-                return events;
-
-            }
+                    });
 
 
-            throw new Error(
-                "Formato de events.json no válido."
-            );
+            return events;
 
 
         } catch (error) {
 
             console.error(
-                "GlobalEven: no se pudo cargar data/events.json",
+                "GlobalEven: error cargando events.json",
                 error
             );
 
 
             /*
-            RESPALDO
+            ====================================================
+            IMPORTANTE
 
-            Si por alguna razón el JSON no está disponible,
-            utilizamos los datos incluidos en data.js.
+            NO usamos datos de demostración.
+
+            Si events.json falla, mostramos un estado vacío.
+            ====================================================
             */
-
-            if (
-                Array.isArray(
-                    window.GLOBALEVEN_EVENTS
-                )
-            ) {
-
-                events =
-                    window.GLOBALEVEN_EVENTS
-                        .filter(Boolean)
-                        .map(normalizeEvent);
-
-                return events;
-
-            }
-
 
             events = [];
 
@@ -282,12 +358,6 @@
     ============================================================
     NORMALIZAR EVENTO
     ============================================================
-
-    Ticketmaster puede devolver campos vacíos.
-
-    Esta función garantiza que el resto del sitio
-    siempre trabaje con strings seguros.
-    ============================================================
     */
 
     function normalizeEvent(event) {
@@ -296,7 +366,7 @@
             event || {};
 
 
-        return {
+        const normalized = {
 
             id:
                 String(
@@ -317,6 +387,21 @@
                 String(
                     item.time ?? ""
                 ),
+
+            startDateTime:
+                String(
+                    item.startDateTime ?? ""
+                ),
+
+            endDateTime:
+                String(
+                    item.endDateTime ?? ""
+                ),
+
+            status:
+                String(
+                    item.status ?? ""
+                ).toLowerCase(),
 
             city:
                 String(
@@ -363,20 +448,56 @@
             url:
                 String(
                     item.url ?? ""
+                ),
+
+            source:
+                String(
+                    item.source ?? "ticketmaster"
                 )
 
         };
+
+
+        /*
+        Si el backend no proporcionó estado,
+        lo calculamos.
+        */
+
+        if (
+            !normalized.status
+        ) {
+
+            normalized.status =
+                getEventStatus(
+                    normalized
+                );
+
+        }
+
+
+        return normalized;
 
     }
 
 
     /*
     ============================================================
-    CREAR TARJETA DE EVENTO
+    CREAR TARJETA
     ============================================================
     */
 
     function createEventCard(event) {
+
+        const status =
+            getEventStatus(event);
+
+        const statusLabel =
+            getStatusLabel(status);
+
+
+        const statusClass =
+            getStatusClass(status);
+
 
         const image =
             event.image
@@ -404,6 +525,18 @@
                 <div class="event-image">
 
                     ${image}
+
+                    ${
+                        statusLabel
+                        ?
+                        `
+                        <span class="event-status ${statusClass}">
+                            ${escapeHTML(statusLabel)}
+                        </span>
+                        `
+                        :
+                        ""
+                    }
 
                 </div>
 
@@ -536,7 +669,7 @@
 
     /*
     ============================================================
-    RENDERIZAR EVENTOS
+    RENDERIZAR
     ============================================================
     */
 
@@ -550,24 +683,22 @@
         }
 
 
-        if (!Array.isArray(list)) {
-            list = [];
-        }
+        if (
+            !Array.isArray(list) ||
+            !list.length
+        ) {
 
+            showEmpty(container);
 
-        if (!list.length) {
-
-            container.innerHTML = "";
-
-
-        } else {
-
-            container.innerHTML =
-                list
-                    .map(createEventCard)
-                    .join("");
+            return;
 
         }
+
+
+        container.innerHTML =
+            list
+                .map(createEventCard)
+                .join("");
 
 
         const empty =
@@ -579,9 +710,7 @@
         if (empty) {
 
             empty.style.display =
-                list.length
-                    ? "none"
-                    : "block";
+                "none";
 
         }
 
@@ -590,7 +719,7 @@
 
     /*
     ============================================================
-    ESTADO DE CARGA
+    CARGANDO
     ============================================================
     */
 
@@ -606,7 +735,7 @@
             <div class="loading-state">
 
                 <p>
-                    Cargando eventos...
+                    Cargando eventos reales...
                 </p>
 
             </div>
@@ -618,7 +747,7 @@
 
     /*
     ============================================================
-    ESTADO DE ERROR / VACÍO
+    VACÍO
     ============================================================
     */
 
@@ -638,8 +767,8 @@
                 </h2>
 
                 <p>
-                    En este momento no encontramos
-                    eventos para mostrar.
+                    No encontramos eventos reales
+                    disponibles para mostrar en este momento.
                 </p>
 
             </div>
@@ -651,7 +780,7 @@
 
     /*
     ============================================================
-    URL PARAMETERS
+    PARÁMETROS URL
     ============================================================
     */
 
@@ -694,6 +823,12 @@
             );
 
 
+        const statusSelect =
+            document.getElementById(
+                "status-filter"
+            );
+
+
         const search =
             (
                 searchInput
@@ -724,6 +859,16 @@
             .trim();
 
 
+        const status =
+            (
+                statusSelect
+                    ? statusSelect.value
+                    : params.get("estado") || ""
+            )
+            .toLowerCase()
+            .trim();
+
+
         const city =
             (
                 params.get("ciudad") ||
@@ -735,12 +880,6 @@
 
         return events.filter(function (event) {
 
-
-            /*
-            ------------------------------------------
-            BÚSQUEDA GENERAL
-            ------------------------------------------
-            */
 
             const searchable = [
 
@@ -768,23 +907,11 @@
                 searchable.includes(search);
 
 
-            /*
-            ------------------------------------------
-            PAÍS
-            ------------------------------------------
-            */
-
             const matchesCountry =
                 !country ||
                 slugify(event.country) ===
                 slugify(country);
 
-
-            /*
-            ------------------------------------------
-            CATEGORÍA
-            ------------------------------------------
-            */
 
             const matchesCategory =
                 !category ||
@@ -794,23 +921,24 @@
                 slugify(category);
 
 
-            /*
-            ------------------------------------------
-            CIUDAD
-            ------------------------------------------
-            */
-
             const matchesCity =
                 !city ||
                 slugify(event.city) ===
                 slugify(city);
 
 
+            const matchesStatus =
+                !status ||
+                getEventStatus(event) ===
+                status;
+
+
             return (
                 matchesSearch &&
                 matchesCountry &&
                 matchesCategory &&
-                matchesCity
+                matchesCity &&
+                matchesStatus
             );
 
         });
@@ -820,7 +948,7 @@
 
     /*
     ============================================================
-    LLENAR SELECT DE PAÍSES
+    PAÍSES
     ============================================================
     */
 
@@ -836,10 +964,6 @@
             return;
         }
 
-
-        /*
-        Evita duplicar opciones.
-        */
 
         select.innerHTML = `
 
@@ -931,7 +1055,7 @@
 
     /*
     ============================================================
-    PÁGINA DE EVENTO INDIVIDUAL
+    EVENTO INDIVIDUAL
     ============================================================
     */
 
@@ -991,17 +1115,25 @@
             " — GlobalEven";
 
 
+        const status =
+            getEventStatus(event);
+
+
+        const statusLabel =
+            getStatusLabel(status);
+
+
+        const statusClass =
+            getStatusClass(status);
+
+
         const image =
             event.image
                 ?
                 `
                 <img
-                    src="${escapeHTML(
-                        event.image
-                    )}"
-                    alt="${escapeHTML(
-                        event.title
-                    )}"
+                    src="${escapeHTML(event.image)}"
+                    alt="${escapeHTML(event.title)}"
                     loading="eager"
                     onerror="this.style.display='none';"
                 >
@@ -1009,9 +1141,7 @@
                 :
                 `
                 <div class="event-image-placeholder">
-
                     <span>📅</span>
-
                 </div>
                 `;
 
@@ -1028,6 +1158,19 @@
 
 
                 <div>
+
+                    ${
+                        statusLabel
+                        ?
+                        `
+                        <span class="event-status ${statusClass}">
+                            ${escapeHTML(statusLabel)}
+                        </span>
+                        `
+                        :
+                        ""
+                    }
+
 
                     <span class="event-tag">
 
@@ -1169,9 +1312,7 @@
                         ?
                         `
                         <a
-                            href="${escapeHTML(
-                                event.url
-                            )}"
+                            href="${escapeHTML(event.url)}"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="primary-button"
@@ -1273,14 +1414,20 @@
             );
 
 
+        const status =
+            document.getElementById(
+                "status-filter"
+            );
+
+
         const params =
             getParams();
 
 
         /*
-        ------------------------------------------
-        RESTAURAR BÚSQUEDA
-        ------------------------------------------
+        ========================================================
+        RESTAURAR FILTROS DESDE URL
+        ========================================================
         */
 
         if (
@@ -1293,12 +1440,6 @@
 
         }
 
-
-        /*
-        ------------------------------------------
-        RESTAURAR CATEGORÍA
-        ------------------------------------------
-        */
 
         if (
             category &&
@@ -1333,10 +1474,21 @@
         }
 
 
+        if (
+            status &&
+            params.has("estado")
+        ) {
+
+            status.value =
+                params.get("estado");
+
+        }
+
+
         /*
-        ------------------------------------------
-        ACTUALIZAR RESULTADOS
-        ------------------------------------------
+        ========================================================
+        ACTUALIZAR
+        ========================================================
         */
 
         function update() {
@@ -1347,38 +1499,9 @@
 
             filtered.sort(function (a, b) {
 
-                const dateA =
-                    new Date(
-                        String(a.date) +
-                        "T" +
-                        (
-                            a.time ||
-                            "00:00"
-                        )
-                    ).getTime();
-
-
-                const dateB =
-                    new Date(
-                        String(b.date) +
-                        "T" +
-                        (
-                            b.time ||
-                            "00:00"
-                        )
-                    ).getTime();
-
-
                 return (
-                    (Number.isNaN(dateA)
-                        ? Infinity
-                        : dateA
-                    )
-                    -
-                    (Number.isNaN(dateB)
-                        ? Infinity
-                        : dateB
-                    )
+                    getEventTimestamp(a) -
+                    getEventTimestamp(b)
                 );
 
             });
@@ -1391,12 +1514,6 @@
 
         }
 
-
-        /*
-        ------------------------------------------
-        EVENTOS DE LOS FILTROS
-        ------------------------------------------
-        */
 
         if (search) {
 
@@ -1428,6 +1545,16 @@
         }
 
 
+        if (status) {
+
+            status.addEventListener(
+                "change",
+                update
+            );
+
+        }
+
+
         update();
 
     }
@@ -1452,51 +1579,107 @@
         }
 
 
+        /*
+        Primero mostramos eventos que están ocurriendo.
+        Después próximos eventos.
+        */
+
+        const nowEvents =
+            events
+                .filter(function (event) {
+
+                    return getEventStatus(event) ===
+                        "ahora";
+
+                });
+
+
         const upcoming =
-            [...events]
-                .sort(function (a, b) {
+            events
+                .filter(function (event) {
 
-                    const dateA =
-                        new Date(
-                            String(a.date) +
-                            "T" +
-                            (
-                                a.time ||
-                                "00:00"
-                            )
-                        ).getTime();
-
-
-                    const dateB =
-                        new Date(
-                            String(b.date) +
-                            "T" +
-                            (
-                                b.time ||
-                                "00:00"
-                            )
-                        ).getTime();
-
-
-                    return (
-                        (Number.isNaN(dateA)
-                            ? Infinity
-                            : dateA
-                        )
-                        -
-                        (Number.isNaN(dateB)
-                            ? Infinity
-                            : dateB
-                        )
-                    );
+                    return getEventStatus(event) ===
+                        "proximo";
 
                 })
-                .slice(0, 6);
+                .sort(function (a, b) {
+
+                    return (
+                        getEventTimestamp(a) -
+                        getEventTimestamp(b)
+                    );
+
+                });
+
+
+        let homeEvents = [];
+
+
+        /*
+        Eventos actuales primero.
+        */
+
+        homeEvents =
+            homeEvents.concat(
+                nowEvents.slice(0, 3)
+            );
+
+
+        /*
+        Completar con próximos.
+        */
+
+        if (
+            homeEvents.length < 6
+        ) {
+
+            homeEvents =
+                homeEvents.concat(
+                    upcoming.slice(
+                        0,
+                        6 - homeEvents.length
+                    )
+                );
+
+        }
+
+
+        /*
+        Si no hay actuales ni próximos,
+        mostrar los más recientes.
+        */
+
+        if (
+            homeEvents.length === 0
+        ) {
+
+            const past =
+                events
+                    .filter(function (event) {
+
+                        return getEventStatus(event) ===
+                            "pasado";
+
+                    })
+                    .sort(function (a, b) {
+
+                        return (
+                            getEventTimestamp(b) -
+                            getEventTimestamp(a)
+                        );
+
+                    });
+
+
+            homeEvents =
+                past.slice(0, 6);
+
+        }
 
 
         renderEvents(
             container,
-            upcoming
+            homeEvents
         );
 
     }
@@ -1509,11 +1692,6 @@
     */
 
     async function initialize() {
-
-        /*
-        Mostrar carga mientras se obtiene
-        events.json.
-        */
 
         const homeContainer =
             document.getElementById(
@@ -1548,15 +1726,13 @@
         );
 
 
-        /*
-        Cargar eventos.
-        */
-
         await loadEvents();
 
 
         /*
-        Si no hay datos, mostrar estado vacío.
+        ========================================================
+        SI NO HAY EVENTOS
+        ========================================================
         */
 
         if (!events.length) {
@@ -1594,7 +1770,9 @@
 
 
         /*
-        Ya tenemos los eventos.
+        ========================================================
+        CONFIGURAR PÁGINAS
+        ========================================================
         */
 
         setupHomeEvents();
@@ -1605,7 +1783,9 @@
 
 
         /*
-        Exponer API pública.
+        ========================================================
+        API PÚBLICA
+        ========================================================
         */
 
         window.GlobalEven = {
@@ -1620,7 +1800,9 @@
 
             slugify,
 
-            loadEvents
+            loadEvents,
+
+            getEventStatus
 
         };
 
@@ -1648,6 +1830,5 @@
         initialize();
 
     }
-
 
 })();
