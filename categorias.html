@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
@@ -11,7 +12,10 @@ content="width=device-width, initial-scale=1.0">
 <title>Categorías de eventos — GlobalEven</title>
 
 <meta name="description"
-content="Explora conciertos, festivales, deportes, tecnología, cultura, gaming y otros eventos.">
+content="Explora eventos reales por categoría: conciertos, festivales, deportes, tecnología, cultura, gaming, gastronomía y familia.">
+
+<meta name="robots"
+content="index, follow">
 
 <link rel="canonical"
 href="https://globaleven.github.io/categorias.html">
@@ -21,7 +25,6 @@ href="assets/css/style.css">
 
 </head>
 
-
 <body>
 
 <header class="header">
@@ -29,11 +32,15 @@ href="assets/css/style.css">
 <div class="container header-content">
 
 <a href="index.html"
-class="logo">
+class="logo"
+aria-label="GlobalEven - Inicio">
+
 Global<span>Even</span>
+
 </a>
 
-<nav class="nav">
+<nav class="nav"
+aria-label="Navegación principal">
 
 <a href="eventos.html">
 Eventos
@@ -53,10 +60,17 @@ Ciudades
 
 </nav>
 
+<a href="buscar.html"
+class="search-button"
+aria-label="Buscar eventos">
+
+🔎 Buscar
+
+</a>
+
 </div>
 
 </header>
-
 
 <main>
 
@@ -64,30 +78,33 @@ Ciudades
 
 <div class="container">
 
-<span>EXPLORA</span>
+<span>
+EXPLORA
+</span>
 
 <h1>
 Categorías de eventos
 </h1>
 
 <p>
-Encuentra el tipo de evento que buscas.
+Explora eventos reales de todo el mundo organizados por categoría.
 </p>
 
 </div>
 
 </section>
 
-
 <section class="section">
 
 <div class="container category-grid">
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=conciertos">
 
-<div>🎵</div>
+<div aria-hidden="true">
+🎵
+</div>
 
 <h2>
 Conciertos
@@ -99,11 +116,13 @@ Música y shows
 
 </a>
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=festivales">
 
-<div>🎪</div>
+<div aria-hidden="true">
+🎪
+</div>
 
 <h2>
 Festivales
@@ -115,11 +134,13 @@ Festivales y celebraciones
 
 </a>
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=deportes">
 
-<div>⚽</div>
+<div aria-hidden="true">
+⚽
+</div>
 
 <h2>
 Deportes
@@ -131,11 +152,13 @@ Eventos deportivos
 
 </a>
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=tecnologia">
 
-<div>💻</div>
+<div aria-hidden="true">
+💻
+</div>
 
 <h2>
 Tecnología
@@ -147,11 +170,13 @@ Ferias y conferencias
 
 </a>
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=cultura">
 
-<div>🎨</div>
+<div aria-hidden="true">
+🎨
+</div>
 
 <h2>
 Arte y cultura
@@ -163,11 +188,13 @@ Arte, exposiciones y cultura
 
 </a>
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=gaming">
 
-<div>🎮</div>
+<div aria-hidden="true">
+🎮
+</div>
 
 <h2>
 Gaming
@@ -179,11 +206,13 @@ Videojuegos y esports
 
 </a>
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=gastronomia">
 
-<div>🍴</div>
+<div aria-hidden="true">
+🍴
+</div>
 
 <h2>
 Gastronomía
@@ -195,11 +224,13 @@ Comida y experiencias
 
 </a>
 
-
-<a class="category-card"
+<a
+class="category-card"
 href="eventos.html?categoria=familia">
 
-<div>👨‍👩‍👧</div>
+<div aria-hidden="true">
+👨‍👩‍👧
+</div>
 
 <h2>
 Familia
@@ -217,18 +248,54 @@ Eventos familiares
 
 </main>
 
-
 <footer class="footer">
 
-<div class="container">
+<div class="container footer-content">
+
+<div>
 
 <strong>
 GlobalEven
 </strong>
 
+<p>
+Eventos de todo el mundo.
+</p>
+
+</div>
+
+<div class="footer-links">
+
+<a href="about.html">
+Sobre GlobalEven
+</a>
+
+<a href="contacto.html">
+Contacto
+</a>
+
+<a href="privacidad.html">
+Privacidad
+</a>
+
+<a href="terminos.html">
+Términos
+</a>
+
+</div>
+
+</div>
+
+<div class="container copyright">
+
+© <span id="year"></span> GlobalEven
+
 </div>
 
 </footer>
 
+<script src="assets/js/app.js"></script>
+
 </body>
+
 </html>
